@@ -1,7 +1,7 @@
 // Service Worker untuk SPMB PWA
 // CATATAN: naikkan versi (vN) setiap kali ingin memaksa pembersihan cache lama
 // di browser pengguna setelah deploy. 'activate' akan menghapus cache versi lama.
-const CACHE_NAME = 'spmb-v2';
+const CACHE_NAME = 'spmb-v3';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',

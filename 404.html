@@ -20,7 +20,7 @@
       href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&family=Inter:wght@300;400;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <script type="module" crossorigin src="/assets/index-Bk6bBv25.js"></script>
+    <script type="module" crossorigin src="/assets/index-2xfEbSSz.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-BsN9uU9D.css">
   </head>
   <body>
@@ -30,6 +30,15 @@
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/sw.js').catch(() => {});
+          // Saat SW versi baru mengambil alih (mis. setelah deploy), muat ulang
+          // sekali agar pengguna langsung mendapat aset & gambar terbaru —
+          // tanpa perlu hard-refresh manual. Guard mencegah reload berulang.
+          let refreshing = false;
+          navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (refreshing) return;
+            refreshing = true;
+            window.location.reload();
+          });
         });
       }
     </script>

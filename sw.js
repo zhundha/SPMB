@@ -1,5 +1,7 @@
 // Service Worker untuk SPMB PWA
-const CACHE_NAME = 'spmb-v1';
+// CATATAN: naikkan versi (vN) setiap kali ingin memaksa pembersihan cache lama
+// di browser pengguna setelah deploy. 'activate' akan menghapus cache versi lama.
+const CACHE_NAME = 'spmb-v2';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
@@ -13,7 +15,7 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// Activate: cleanup old caches
+// Activate: hapus semua cache versi lama
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
@@ -23,22 +25,24 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch: network-first for API, cache-first for static
+// Fetch: network-first untuk aset same-origin; cache hanya sebagai fallback offline.
 self.addEventListener('fetch', (event) => {
   const { request } = event;
-  const url = new URL(request.url);
-
-  // Skip non-GET requests
   if (request.method !== 'GET') return;
 
-  // API calls: network only (don't cache dynamic data)
+  const url = new URL(request.url);
+
+  // Biarkan SEMUA permintaan lintas-domain langsung ke jaringan tanpa di-cache:
+  // gambar (wsrv.nl / r2.dev), font, dll. Ini mencegah gambar/aset basi tersaji
+  // dari cache lama — penyebab "hanya 1 gambar carousel yang tampil".
+  if (url.origin !== self.location.origin) return;
+
+  // API calls: network only (jangan cache data dinamis)
   if (url.pathname.startsWith('/api')) return;
 
-  // For navigation and static assets: network first, fallback to cache
   event.respondWith(
     fetch(request)
       .then((response) => {
-        // Clone response and cache it
         if (response.ok) {
           const clone = response.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
